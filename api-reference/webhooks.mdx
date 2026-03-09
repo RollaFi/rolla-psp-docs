@@ -1,0 +1,104 @@
+---
+title: 'Webhooks'
+description: 'Receive real-time notifications for payment events'
+---
+
+## Overview
+
+Webhooks allow you to receive real-time notifications when events occur in your Rolla PSP account. When an event happens, we send an HTTP POST request to your configured webhook URL.
+
+## Setting Up Webhooks
+
+You can configure webhooks in two ways:
+
+1. **Dashboard**: Set a global webhook URL in your [Rolla PSP Dashboard](https://dashboard.rolla.io/webhooks)
+2. **Per-payment**: Include a `webhook_url` when initiating a payment
+
+## Webhook Events
+
+| Event | Description |
+|-------|-------------|
+| `payment.created` | A new payment has been initiated |
+| `payment.processing` | Payment is being processed |
+| `payment.completed` | Payment was successful |
+| `payment.failed` | Payment failed |
+| `payment.refunded` | Payment was refunded |
+
+## Webhook Payload
+
+All webhooks are sent as `POST` requests with a JSON body:
+
+```json
+{
+  "event": "payment.completed",
+  "timestamp": "2024-01-15T10:35:00Z",
+  "data": {
+    "id": "pay_abc123xyz",
+    "amount": 5000,
+    "currency": "USD",
+    "status": "completed",
+    "customer_email": "customer@example.com",
+    "metadata": {
+      "order_id": "12345"
+    }
+  }
+}
+```
+
+## Webhook Headers
+
+Each webhook request includes the following headers:
+
+| Header | Description |
+|--------|-------------|
+| `X-Rolla-Signature` | HMAC-SHA256 signature for verification |
+| `X-Rolla-Timestamp` | Unix timestamp of when the webhook was sent |
+| `Content-Type` | Always `application/json` |
+
+## Verifying Webhooks
+
+<Warning>
+  Always verify webhook signatures to ensure requests are from Rolla PSP.
+</Warning>
+
+Verify the signature using your webhook secret:
+
+```javascript
+const crypto = require('crypto');
+
+function verifyWebhook(payload, signature, timestamp, secret) {
+  const signedPayload = `${timestamp}.${JSON.stringify(payload)}`;
+  const expectedSignature = crypto
+    .createHmac('sha256', secret)
+    .update(signedPayload)
+    .digest('hex');
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expectedSignature)
+  );
+}
+```
+
+## Responding to Webhooks
+
+Your endpoint should return a `200` status code within 30 seconds. If we don't receive a successful response, we'll retry the webhook:
+
+- **Retry 1**: 5 minutes after initial attempt
+- **Retry 2**: 30 minutes after initial attempt
+- **Retry 3**: 2 hours after initial attempt
+- **Retry 4**: 24 hours after initial attempt
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Return 200 quickly">
+    Process webhooks asynchronously and return a 200 status immediately. Handle business logic in a background job.
+  </Accordion>
+  <Accordion title="Handle duplicates">
+    Webhooks may be delivered more than once. Use the event ID to deduplicate.
+  </Accordion>
+  <Accordion title="Verify signatures">
+    Always verify the webhook signature before processing the event.
+  </Accordion>
+</AccordionGroup>

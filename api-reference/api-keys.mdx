@@ -1,0 +1,94 @@
+---
+title: 'API Keys'
+description: 'Manage your API credentials'
+---
+
+## Overview
+
+API keys are used to authenticate requests to the Rolla PSP API. Each key is associated with your account and can be configured for different environments.
+
+## Key Types
+
+| Type | Prefix | Description |
+|------|--------|-------------|
+| **Test** | `sk_test_` | For development and testing. No real transactions. |
+| **Live** | `sk_live_` | For production. Processes real transactions. |
+
+## Managing API Keys
+
+### View Keys
+
+Access your API keys from the [Dashboard](https://dashboard.rolla.io/api-keys).
+
+<Note>
+  For security, full API keys are only shown once when created. Store them securely.
+</Note>
+
+### Create a New Key
+
+1. Go to **Settings** > **API Keys** in the dashboard
+2. Click **Create New Key**
+3. Select the environment (Test or Live)
+4. Copy and securely store the key
+
+### Revoke a Key
+
+If a key is compromised:
+
+1. Go to **Settings** > **API Keys**
+2. Find the key and click **Revoke**
+3. Confirm the action
+
+<Warning>
+  Revoking a key is immediate and permanent. Any requests using that key will fail.
+</Warning>
+
+## Security Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Use Environment Variables" icon="lock">
+    Never hardcode API keys. Use environment variables or a secrets manager.
+  </Card>
+  <Card title="Separate Environments" icon="code-branch">
+    Use test keys for development and live keys only in production.
+  </Card>
+  <Card title="Rotate Regularly" icon="rotate">
+    Periodically rotate your API keys to maintain security.
+  </Card>
+  <Card title="Monitor Usage" icon="chart-line">
+    Review API usage in the dashboard to detect unusual activity.
+  </Card>
+</CardGroup>
+
+## Example Usage
+
+```bash
+# Test environment
+export ROLLA_API_KEY="sk_test_abc123..."
+
+# Live environment
+export ROLLA_API_KEY="sk_live_xyz789..."
+```
+
+```javascript
+// In your application
+const apiKey = process.env.ROLLA_API_KEY;
+
+const response = await fetch('https://api.rolla.io/v1/payments', {
+  headers: {
+    'X-API-Key': apiKey,
+  },
+});
+```
+
+## Rate Limits
+
+API keys are subject to rate limits:
+
+| Plan | Requests per minute |
+|------|---------------------|
+| Free | 60 |
+| Pro | 300 |
+| Enterprise | Custom |
+
+If you exceed the rate limit, you'll receive a `429 Too Many Requests` response.

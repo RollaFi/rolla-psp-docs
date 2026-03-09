@@ -1,0 +1,83 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "Rolla PSP API",
+  "logo": {
+    "dark": "/images/logo-dark.svg",
+    "light": "/images/logo-light.svg"
+  },
+  "favicon": "/images/favicon.svg",
+  "colors": {
+    "primary": "#0D9373",
+    "light": "#07C983",
+    "dark": "#0D9373",
+    "anchors": {
+      "from": "#0D9373",
+      "to": "#07C983"
+    }
+  },
+  "topbarLinks": [
+    {
+      "name": "Support",
+      "url": "mailto:support@rolla.io"
+    }
+  ],
+  "topbarCtaButton": {
+    "name": "Dashboard",
+    "url": "https://dashboard.rolla.io"
+  },
+  "tabs": [
+    {
+      "name": "API Reference",
+      "url": "api-reference"
+    }
+  ],
+  "anchors": [
+    {
+      "name": "API Reference",
+      "icon": "code",
+      "url": "api-reference"
+    }
+  ],
+  "navigation": [
+    {
+      "group": "Get Started",
+      "pages": ["introduction", "authentication"]
+    },
+    {
+      "group": "API Reference",
+      "pages": [
+        "api-reference/introduction"
+      ]
+    },
+    {
+      "group": "Payments",
+      "pages": [
+        "api-reference/initiate-payment",
+        "api-reference/verify-transaction",
+        "api-reference/get-transaction"
+      ]
+    },
+    {
+      "group": "Webhooks",
+      "pages": [
+        "api-reference/webhooks"
+      ]
+    },
+    {
+      "group": "API Keys",
+      "pages": [
+        "api-reference/api-keys"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "twitter": "https://twitter.com/rollaio",
+    "github": "https://github.com/rollaio"
+  },
+  "api": {
+    "baseUrl": "https://api.rolla.io",
+    "auth": {
+      "method": "bearer"
+    }
+  }
+}

@@ -1,0 +1,63 @@
+---
+title: 'API Reference'
+description: 'Complete reference for the Rolla PSP API'
+---
+
+## Overview
+
+The Rolla PSP API is organized around REST. Our API has predictable resource-oriented URLs, accepts JSON-encoded request bodies, returns JSON-encoded responses, and uses standard HTTP response codes and authentication.
+
+## Base URL
+
+```
+https://api.rolla.io/v1
+```
+
+## Authentication
+
+All API endpoints require authentication via the `X-API-Key` header.
+
+```bash
+curl -X GET "https://api.rolla.io/v1/transactions" \
+  -H "X-API-Key: your_api_key_here" \
+  -H "Content-Type: application/json"
+```
+
+## Response Format
+
+All responses are returned in JSON format:
+
+```json
+{
+  "success": true,
+  "data": {
+    // Response data
+  }
+}
+```
+
+## Error Handling
+
+When an error occurs, the API returns an appropriate HTTP status code along with a JSON error object:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "invalid_request",
+    "message": "Description of the error"
+  }
+}
+```
+
+### HTTP Status Codes
+
+| Code | Description |
+|------|-------------|
+| `200` | Success |
+| `201` | Created |
+| `400` | Bad Request |
+| `401` | Unauthorized |
+| `404` | Not Found |
+| `422` | Validation Error |
+| `500` | Internal Server Error |

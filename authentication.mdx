@@ -1,0 +1,129 @@
+---
+title: Authentication
+description: 'Learn how to authenticate your API requests'
+---
+
+## API Key Authentication
+
+All API requests require authentication using your secret API key. You can obtain your API keys from the [Rolla Dashboard](https://dashboard.rolla.io) under **Settings > API Keys & Webhooks**.
+
+### Using Your API Key
+
+Include your secret key in the `Authorization` header with every request using the Bearer scheme:
+
+```bash
+curl -X POST "https://api.rolla.io/api/v1/transaction/initiate" \
+  -H "Authorization: Bearer sk_live_your_secret_key" \
+  -H "Content-Type: application/json" \
+  -d '{ ... }'
+```
+
+### API Key Types
+
+Rolla provides two types of API keys for each environment:
+
+| Key Type | Prefix | Usage |
+|----------|--------|-------|
+| **Public Key** | `pk_test_*` / `pk_live_*` | Safe for client-side code (limited access) |
+| **Secret Key** | `sk_test_*` / `sk_live_*` | Server-side only (full API access) |
+
+### Environment Keys
+
+| Environment | Key Prefix | Description |
+|-------------|------------|-------------|
+| **Test** | `sk_test_*` | Use for development and testing. No real transactions are processed. |
+| **Live** | `sk_live_*` | Use for production. Real transactions are processed. |
+
+<Warning>
+  **Never expose your secret keys in client-side code or public repositories.**
+
+  Secret keys provide full access to your account and should only be used in secure server-side environments.
+</Warning>
+
+### Example Request
+
+```javascript Node.js
+const response = await fetch('https://api.rolla.io/api/v1/transaction/initiate', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer sk_live_your_secret_key',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    amount: 1000,
+    currency: 'USD',
+    channel: 'card',
+    customer: {
+      email: 'customer@example.com'
+    },
+    // ... other fields
+  }),
+});
+
+const data = await response.json();
+```
+
+```python Python
+import requests
+
+response = requests.post(
+    'https://api.rolla.io/api/v1/transaction/initiate',
+    headers={
+        'Authorization': 'Bearer sk_live_your_secret_key',
+        'Content-Type': 'application/json',
+    },
+    json={
+        'amount': 1000,
+        'currency': 'USD',
+        'channel': 'card',
+        'customer': {
+            'email': 'customer@example.com'
+        },
+        # ... other fields
+    }
+)
+
+data = response.json()
+```
+
+### Error Responses
+
+If authentication fails, you'll receive a `401 Unauthorized` response:
+
+```json
+{
+  "success": false,
+  "status": 401,
+  "message": "Invalid API key"
+}
+```
+
+Common authentication errors:
+
+| Error | Cause |
+|-------|-------|
+| `Invalid API key` | The API key is incorrect or has been revoked |
+| `API key required` | No Authorization header was provided |
+| `API key not active` | The API key has been disabled |
+
+### Best Practices
+
+<AccordionGroup>
+  <Accordion title="Store keys securely">
+    Use environment variables or a secrets manager to store your API keys. Never hardcode them in your application.
+
+    ```bash
+    # .env file
+    ROLLA_SECRET_KEY=sk_live_your_secret_key
+    ```
+  </Accordion>
+  <Accordion title="Rotate keys regularly">
+    Periodically rotate your API keys to maintain security. You can regenerate keys from the dashboard.
+  </Accordion>
+  <Accordion title="Use test keys for development">
+    Always use test API keys (`sk_test_*`) during development to avoid processing real transactions.
+  </Accordion>
+  <Accordion title="Restrict key permissions">
+    Use the dashboard to configure which operations each key can perform.
+  </Accordion>
+</AccordionGroup>
