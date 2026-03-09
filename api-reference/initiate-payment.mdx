@@ -18,6 +18,10 @@ Authorization: Bearer sk_live_your_secret_key
 
 ## Request Body
 
+<ParamField body="reference" type="string">
+  Optional custom transaction reference. If not provided, a unique reference will be auto-generated (e.g., `TXN_gGbEEvK25eVgmgrf`). Must be unique per organization.
+</ParamField>
+
 <ParamField body="amount" type="number" required>
   The payment amount (e.g., 1000 for 1000 units of the currency)
 </ParamField>
@@ -181,6 +185,7 @@ curl -X POST "https://api.rolla.io/api/v1/transaction/initiate" \
   -H "Authorization: Bearer sk_live_your_secret_key" \
   -H "Content-Type: application/json" \
   -d '{
+    "reference": "ORD-12345",
     "amount": 1000,
     "currency": "USD",
     "channel": "card",
@@ -218,6 +223,7 @@ const response = await fetch('https://api.rolla.io/api/v1/transaction/initiate',
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
+    reference: 'ORD-12345',
     amount: 1000,
     currency: 'USD',
     channel: 'card',
@@ -260,6 +266,7 @@ response = requests.post(
         'Content-Type': 'application/json',
     },
     json={
+        'reference': 'ORD-12345',
         'amount': 1000,
         'currency': 'USD',
         'channel': 'card',
@@ -300,7 +307,7 @@ data = response.json()
   "status": 201,
   "message": "Transaction initiated",
   "data": {
-    "reference": "TXN_gGbEEvK25eVgmgrf",
+    "reference": "ORD-12345",
     "status": "requires_action",
     "amount": 1000,
     "currency": "USD",
@@ -335,6 +342,14 @@ data = response.json()
   "success": false,
   "status": 401,
   "message": "Invalid API key"
+}
+```
+
+```json 409 Duplicate Reference
+{
+  "success": false,
+  "status": 409,
+  "message": "Transaction with reference 'ORD-12345' already exists"
 }
 ```
 </ResponseExample>
