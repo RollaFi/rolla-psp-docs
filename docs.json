@@ -45,7 +45,8 @@
                 "group": "Payments",
                 "pages": [
                   "api-reference/initiate-payment",
-                  "api-reference/verify-transaction"
+                  "api-reference/verify-transaction",
+                  "api-reference/refunds"
                 ]
               },
               {
