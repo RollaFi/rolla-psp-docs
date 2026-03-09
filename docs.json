@@ -1,0 +1,101 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Rolla PSP API",
+  "colors": {
+    "primary": "#0D9373",
+    "light": "#07C983",
+    "dark": "#0D9373"
+  },
+  "favicon": "/images/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "anchors": [
+          {
+            "anchor": "Documentation",
+            "icon": "book-open",
+            "groups": [
+              {
+                "group": "Get Started",
+                "pages": [
+                  "introduction",
+                  "authentication"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "anchors": [
+          {
+            "anchor": "API Reference",
+            "icon": "code",
+            "groups": [
+              {
+                "group": "API Reference",
+                "pages": [
+                  "api-reference/introduction"
+                ]
+              },
+              {
+                "group": "Payments",
+                "pages": [
+                  "api-reference/initiate-payment",
+                  "api-reference/verify-transaction",
+                  "api-reference/get-transaction"
+                ]
+              },
+              {
+                "group": "Webhooks",
+                "pages": [
+                  "api-reference/webhooks"
+                ]
+              },
+              {
+                "group": "API Keys",
+                "pages": [
+                  "api-reference/api-keys"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "logo": {
+    "light": "/images/logo-light.svg",
+    "dark": "/images/logo-dark.svg"
+  },
+  "api": {
+    "mdx": {
+      "server": "https://api.rolla.io",
+      "auth": {
+        "method": "bearer"
+      }
+    }
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Support",
+        "href": "mailto:support@rolla.io"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Dashboard",
+      "href": "https://dashboard.rolla.io"
+    }
+  },
+  "footer": {
+    "socials": {
+      "twitter": "https://twitter.com/rollaio",
+      "github": "https://github.com/rollaio"
+    }
+  }
+}
