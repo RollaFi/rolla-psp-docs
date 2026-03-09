@@ -349,6 +349,33 @@ data = response.json()
 | `successful` | Transaction completed successfully |
 | `failed` | Transaction failed |
 
+## Test Cards
+
+Use these test cards with your `sk_test_*` API key in sandbox mode:
+
+<Tabs>
+  <Tab title="Visa">
+    | Field | Value |
+    |-------|-------|
+    | Card Number | `4187452461676736` |
+    | Expiry Month | `11` |
+    | Expiry Year | `2027` |
+    | CVV | `104` |
+  </Tab>
+  <Tab title="Mastercard">
+    | Field | Value |
+    |-------|-------|
+    | Card Number | `5123450000000008` |
+    | Expiry Month | `01` |
+    | Expiry Year | `2030` |
+    | CVV | `123` |
+  </Tab>
+</Tabs>
+
+<Warning>
+  Test cards only work with `sk_test_*` API keys. They will be rejected in production mode.
+</Warning>
+
 ## Next Steps
 
 After initiating a payment:
