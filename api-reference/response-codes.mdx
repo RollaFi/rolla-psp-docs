@@ -1,0 +1,214 @@
+---
+title: 'Response Codes'
+description: 'Understanding payment response codes and their meanings'
+---
+
+# Response Codes
+
+When processing payments, you'll receive response codes that indicate the outcome of the transaction. Understanding these codes helps you handle different scenarios appropriately and provide meaningful feedback to your customers.
+
+## Response Structure
+
+Every transaction response includes:
+
+```json
+{
+  "status": "success" | "failed" | "pending",
+  "data": {
+    "reference": "TXN_abc123",
+    "status": "APPROVED" | "DECLINED" | "PENDING" | "FAILED",
+    "responseCode": "00",
+    "responseMessage": "Approved",
+    "amount": 10000,
+    "currency": "NGN"
+  }
+}
+```
+
+## Response Code Categories
+
+<AccordionGroup>
+  <Accordion title="Success Codes" icon="circle-check" iconType="solid">
+    Transactions that were successfully processed.
+
+    | Code | Message | Description |
+    |------|---------|-------------|
+    | `00` | Approved | Transaction was approved by the issuing bank |
+  </Accordion>
+
+  <Accordion title="Declined Codes" icon="circle-xmark" iconType="solid">
+    Transactions that were declined by the card issuer or processor.
+
+    | Code | Message | Customer Message | Retryable |
+    |------|---------|------------------|-----------|
+    | `05` | Do Not Honor | Your card was declined | No |
+    | `51` | Insufficient Funds | Insufficient funds in your account | Yes |
+    | `57` | Transaction Not Permitted | This transaction is not allowed on your card | No |
+    | `62` | Restricted Card | Your card is restricted | No |
+  </Accordion>
+
+  <Accordion title="Error Codes" icon="triangle-exclamation" iconType="solid">
+    Transactions that failed due to invalid data or technical issues.
+
+    | Code | Message | Customer Message | Retryable |
+    |------|---------|------------------|-----------|
+    | `14` | Invalid Card Number | Invalid card number | Yes |
+    | `12` | Invalid Transaction | Transaction not supported | No |
+    | `13` | Invalid Amount | Invalid transaction amount | Yes |
+    | `30` | Format Error | Invalid request format | Yes |
+  </Accordion>
+
+  <Accordion title="Expired Card Codes" icon="calendar-xmark" iconType="solid">
+    Transactions that failed because the card has expired.
+
+    | Code | Message | Customer Message | Action Required |
+    |------|---------|------------------|-----------------|
+    | `54` | Expired Card | Your card has expired | Customer needs a new card |
+    | `33` | Expired Card - Pick Up | Card expired, capture required | Customer needs a new card |
+  </Accordion>
+
+  <Accordion title="Limit Exceeded Codes" icon="gauge-high" iconType="solid">
+    Transactions that exceeded configured limits.
+
+    | Code | Message | Customer Message | Retryable |
+    |------|---------|------------------|-----------|
+    | `61` | Exceeds Withdrawal Limit | Transaction exceeds your daily limit | Yes (smaller amount) |
+    | `65` | Activity Limit Exceeded | Too many transactions | Yes (wait and retry) |
+  </Accordion>
+
+  <Accordion title="Authentication Codes" icon="shield-check" iconType="solid">
+    3D Secure authentication status codes.
+
+    | Code | Message | Description |
+    |------|---------|-------------|
+    | `AUTHENTICATION_SUCCESSFUL` | 3DS Authentication Successful | Card verified via 3D Secure |
+    | `AUTHENTICATION_FAILED` | 3DS Authentication Failed | Customer failed 3D Secure verification |
+    | `AUTHENTICATION_UNAVAILABLE` | 3DS Not Available | 3D Secure not supported for this card |
+  </Accordion>
+</AccordionGroup>
+
+## Complete Response Code Reference
+
+### Approved Transactions
+
+| Code | Response Message | Description |
+|------|-----------------|-------------|
+| `00` | Approved | Transaction successful |
+
+### Declined Transactions
+
+| Code | Response Message | Customer Message | Suggested Action |
+|------|-----------------|------------------|------------------|
+| `05` | Do Not Honor | Your card was declined | Contact your bank or try a different card |
+| `51` | Insufficient Funds | Insufficient funds in your account | Add funds or use a different card |
+| `57` | Transaction Not Permitted | This transaction is not allowed | Contact your bank |
+| `62` | Restricted Card | Your card is restricted | Use a different card |
+| `63` | Security Violation | Security check failed | Try again or use a different card |
+
+### Card Issues
+
+| Code | Response Message | Customer Message | Requires New Card |
+|------|-----------------|------------------|-------------------|
+| `14` | Invalid Card Number | Invalid card number | No - check input |
+| `54` | Expired Card | Your card has expired | Yes |
+| `55` | Incorrect PIN | Incorrect PIN entered | No - retry |
+| `75` | PIN Tries Exceeded | Too many incorrect PIN attempts | Contact bank |
+
+### Limit & Frequency
+
+| Code | Response Message | Customer Message | Retryable |
+|------|-----------------|------------------|-----------|
+| `61` | Exceeds Withdrawal Limit | Exceeds your daily limit | Yes - smaller amount |
+| `65` | Activity Limit Exceeded | Too many transactions | Yes - wait and retry |
+
+### Technical Errors
+
+| Code | Response Message | Customer Message | Retryable |
+|------|-----------------|------------------|-----------|
+| `12` | Invalid Transaction | Transaction not supported | No |
+| `13` | Invalid Amount | Invalid amount | Yes - fix amount |
+| `30` | Format Error | Request format error | Yes - fix request |
+| `91` | Issuer Unavailable | Bank temporarily unavailable | Yes - retry later |
+| `96` | System Malfunction | Processing error | Yes - retry later |
+
+## Handling Response Codes
+
+### Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Retryable Errors" icon="rotate">
+    For codes like `51` (Insufficient Funds) or `91` (Issuer Unavailable), you can prompt the customer to retry or automatically retry after a delay.
+  </Card>
+  <Card title="Non-Retryable Errors" icon="ban">
+    For codes like `05` (Do Not Honor) or `54` (Expired Card), don't retry automatically. Ask the customer to use a different payment method.
+  </Card>
+  <Card title="Customer Communication" icon="message">
+    Always show the `friendlyMessage` to customers, not the technical `responseMessage`. This provides a better user experience.
+  </Card>
+  <Card title="Logging" icon="clipboard-list">
+    Log the full response including `responseCode` and `responseMessage` for debugging and support purposes.
+  </Card>
+</CardGroup>
+
+### Code Example
+
+```javascript
+async function handlePaymentResponse(response) {
+  const { responseCode, status, friendlyMessage } = response.data;
+
+  switch (responseCode) {
+    case '00':
+      // Success - show confirmation
+      showSuccess('Payment successful!');
+      break;
+
+    case '51':
+      // Insufficient funds - retryable
+      showError(friendlyMessage);
+      promptRetry();
+      break;
+
+    case '54':
+      // Expired card - needs new card
+      showError('Your card has expired. Please use a different card.');
+      promptNewCard();
+      break;
+
+    case '05':
+      // Do not honor - contact bank
+      showError(friendlyMessage);
+      suggestContactBank();
+      break;
+
+    default:
+      // Generic error handling
+      showError(friendlyMessage || 'Payment failed. Please try again.');
+  }
+}
+```
+
+## Webhook Response Codes
+
+When receiving webhooks, you'll also see response codes in the payload:
+
+```json
+{
+  "event": "charge.success",
+  "data": {
+    "reference": "TXN_abc123",
+    "status": "APPROVED",
+    "responseCode": "00",
+    "responseMessage": "Approved",
+    "processorResponseCode": "00",
+    "processorResponseMessage": "Approved"
+  }
+}
+```
+
+<Note>
+  The `processorResponseCode` contains the raw code from the payment processor, while `responseCode` is our normalized code. Use `responseCode` for consistent handling across all processors.
+</Note>
+
+## Need Help?
+
+If you encounter a response code not listed here or need clarification, contact our support team at [support@rolla.io](mailto:support@rolla.io).

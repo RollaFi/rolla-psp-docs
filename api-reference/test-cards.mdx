@@ -1,0 +1,92 @@
+---
+title: 'Test Cards'
+description: 'Test cards for sandbox testing'
+---
+
+## Overview
+
+Test cards allow you to simulate different payment scenarios in sandbox mode without using real payment credentials. These cards only work with **test API keys** (`sk_test_*`).
+
+<Warning>
+  Test cards cannot be used in live/production mode. Attempting to use a test card with a live API key (`sk_live_*`) will result in a rejected transaction with the error message: "Test cards cannot be used in live mode."
+</Warning>
+
+## Test Card
+
+Use this card for testing your integration:
+
+| Field | Value |
+|-------|-------|
+| Card Number | `5123450000000008` |
+| Expiry Month | `01` |
+| Expiry Year | `2039` |
+| CVV | `100` |
+
+<Note>
+  This Mastercard test card will simulate a successful payment in test mode.
+</Note>
+
+## Example Test Request
+
+```bash cURL
+curl -X POST "https://api.rolla.io/api/v1/transaction/initiate" \
+  -H "Authorization: Bearer sk_test_your_test_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "amount": 1000,
+    "currency": "USD",
+    "channel": "card",
+    "customer": {
+      "email": "test@example.com",
+      "name": "Test User"
+    },
+    "card": {
+      "number": "5123450000000008",
+      "expiryMonth": "01",
+      "expiryYear": "2039",
+      "cvv": "100"
+    },
+    "callbackUrl": "https://yoursite.com/callback"
+  }'
+```
+
+```javascript Node.js
+const response = await fetch('https://api.rolla.io/api/v1/transaction/initiate', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer sk_test_your_test_key',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    amount: 1000,
+    currency: 'USD',
+    channel: 'card',
+    customer: {
+      email: 'test@example.com',
+      name: 'Test User'
+    },
+    card: {
+      number: '5123450000000008',
+      expiryMonth: '01',
+      expiryYear: '2039',
+      cvv: '100'
+    },
+    callbackUrl: 'https://yoursite.com/callback'
+  }),
+});
+```
+
+## Important Notes
+
+<CardGroup cols={2}>
+  <Card title="Test Mode Only" icon="flask">
+    Test cards are only accepted when using test API keys (`sk_test_*`). They will be rejected in live mode.
+  </Card>
+  <Card title="No Real Charges" icon="shield">
+    Test transactions do not charge any real payment methods. They simulate the payment flow for testing purposes.
+  </Card>
+</CardGroup>
+
+<Info>
+  Need to test a specific scenario that isn't covered? Contact our support team at support@rolla.io.
+</Info>

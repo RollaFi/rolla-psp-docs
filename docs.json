@@ -45,8 +45,10 @@
                 "group": "Payments",
                 "pages": [
                   "api-reference/initiate-payment",
+                  "api-reference/test-cards",
                   "api-reference/verify-transaction",
-                  "api-reference/refunds"
+                  "api-reference/refunds",
+                  "api-reference/response-codes"
                 ]
               },
               {
