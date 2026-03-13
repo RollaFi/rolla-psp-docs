@@ -505,32 +505,3 @@ Here's how to properly verify a transaction:
   </Card>
 </CardGroup>
 
-## Understanding payment_source
-
-The `payment_source` object contains details about how the customer paid. This is useful for:
-
-1. **Displaying payment info**: Show the customer which card/account they used
-2. **Analytics**: Track which payment methods are most popular
-3. **Fraud detection**: Check the card's country matches the customer's location
-
-```javascript
-const { payment_source } = result.data;
-
-if (payment_source) {
-  if (payment_source.type === 'card') {
-    console.log(`Paid with ${payment_source.brand} ending in ${payment_source.last4}`);
-  } else if (payment_source.type === 'bank_transfer') {
-    console.log(`Paid via bank transfer from ${payment_source.bank_name}`);
-  }
-}
-```
-
-## Alternative: POST Method
-
-This endpoint also supports POST requests with the same path:
-
-```bash
-POST /api/v1/transaction/verify/{reference}
-```
-
-Both methods return the same response.
