@@ -1,8 +1,45 @@
 ---
 title: 'Verify Transaction'
 api: 'GET https://api.rolla.io/api/v1/transaction/verify/{reference}'
-description: 'Verify the status of a transaction using its reference'
+description: 'Confirm the status of a transaction after a customer completes payment'
 ---
+
+After a customer makes a payment, the next step is to verify that the payment was successful before delivering value to them. This guide walks you through verifying transactions.
+
+## Why Verify?
+
+When a customer completes a payment on your checkout page and is redirected back to your site, you need to confirm that the payment was actually successful. This is important because:
+
+1. **Security**: Client-side data can be manipulated. A malicious user could fake a successful callback.
+2. **Reliability**: Network issues might cause webhooks to fail or be delayed.
+3. **Accuracy**: Get the exact amount paid and confirm it matches the expected amount.
+
+<Warning>
+  Never deliver value based solely on the redirect URL or client-side data. Always verify on your server.
+</Warning>
+
+## How It Works
+
+When a transaction is completed, the transaction reference is returned as a **query parameter** to your `callbackUrl`:
+
+```
+https://yoursite.com/callback?trxref=TXN_gGbEEvK25eVgmgrf&reference=TXN_gGbEEvK25eVgmgrf
+```
+
+You'll extract this reference and send it to the verify endpoint from your server.
+
+## Understanding the Response
+
+<Info>
+  **Important**: The API response has a `success` field indicating if the API call was successful. This is **not** the status of the transaction.
+
+  The transaction status is in the `data` object: `response.data.status`
+</Info>
+
+| Field | What It Means |
+|-------|---------------|
+| `response.success` | Whether the API request succeeded |
+| `response.data.status` | The actual transaction status (`successful`, `failed`, `pending`, etc.) |
 
 ## Authentication
 
@@ -13,7 +50,7 @@ Authorization: Bearer sk_live_your_secret_key
 ```
 
 <Note>
-  The organization is automatically determined from your API key. You don't need to provide an organization ID.
+  Use your **secret key**, not your public key. The organization is automatically determined from your API key.
 </Note>
 
 ## Path Parameters
@@ -25,7 +62,7 @@ Authorization: Bearer sk_live_your_secret_key
 ## Response
 
 <ResponseField name="success" type="boolean">
-  Indicates if the request was successful
+  Indicates if the API request was successful
 </ResponseField>
 
 <ResponseField name="status" type="number">
@@ -44,23 +81,23 @@ Authorization: Bearer sk_live_your_secret_key
     <ResponseField name="reference" type="string">
       Transaction reference
     </ResponseField>
-    <ResponseField name="amount" type="number">
-      Transaction amount
-    </ResponseField>
-    <ResponseField name="currency" type="string">
-      Currency code
-    </ResponseField>
     <ResponseField name="status" type="string">
       Transaction status: `pending`, `requires_action`, `processing`, `successful`, `failed`
+    </ResponseField>
+    <ResponseField name="amount" type="number">
+      Transaction amount in the smallest currency unit (e.g., kobo for NGN)
+    </ResponseField>
+    <ResponseField name="currency" type="string">
+      Currency code (e.g., `NGN`, `USD`, `GBP`)
     </ResponseField>
     <ResponseField name="channel" type="string">
       Payment channel used: `card`, `bank_transfer`, `ussd`
     </ResponseField>
-    <ResponseField name="fee" type="number">
+    <ResponseField name="fees" type="number">
       Fee charged for the transaction
     </ResponseField>
-    <ResponseField name="netAmount" type="number">
-      Amount after fees
+    <ResponseField name="net_amount" type="number">
+      Amount after fees (amount - fees)
     </ResponseField>
     <ResponseField name="customer" type="object">
       Customer information
@@ -69,21 +106,70 @@ Authorization: Bearer sk_live_your_secret_key
           Customer email
         </ResponseField>
         <ResponseField name="name" type="string">
-          Customer name
+          Customer name (if provided)
+        </ResponseField>
+        <ResponseField name="phone" type="string">
+          Customer phone number (if provided)
         </ResponseField>
       </Expandable>
     </ResponseField>
-    <ResponseField name="metadata" type="object">
-      Custom metadata attached to the transaction
+    <ResponseField name="payment_source" type="object">
+      Details of the payment instrument used. Structure varies by channel type.
+      <Expandable title="Card payment properties">
+        <ResponseField name="type" type="string">
+          Payment type: `card`
+        </ResponseField>
+        <ResponseField name="bin" type="string">
+          First 6 digits of the card
+        </ResponseField>
+        <ResponseField name="last4" type="string">
+          Last 4 digits of the card
+        </ResponseField>
+        <ResponseField name="brand" type="string">
+          Card brand: `visa`, `mastercard`, `verve`, etc.
+        </ResponseField>
+        <ResponseField name="card_type" type="string">
+          Card type: `debit`, `credit`
+        </ResponseField>
+        <ResponseField name="country_code" type="string">
+          Country code of the card issuer (e.g., `NG`)
+        </ResponseField>
+        <ResponseField name="bank" type="string">
+          Issuing bank name (if available)
+        </ResponseField>
+      </Expandable>
+      <Expandable title="Bank transfer properties">
+        <ResponseField name="type" type="string">
+          Payment type: `bank_transfer`
+        </ResponseField>
+        <ResponseField name="bank_code" type="string">
+          Bank code
+        </ResponseField>
+        <ResponseField name="bank_name" type="string">
+          Bank name
+        </ResponseField>
+      </Expandable>
     </ResponseField>
     <ResponseField name="description" type="string">
       Transaction description
     </ResponseField>
-    <ResponseField name="createdAt" type="string">
+    <ResponseField name="metadata" type="object">
+      Custom metadata attached to the transaction
+    </ResponseField>
+    <ResponseField name="gateway_response" type="string">
+      Response message from the payment gateway
+    </ResponseField>
+    <ResponseField name="created_at" type="string">
       ISO 8601 timestamp when the transaction was created
     </ResponseField>
-    <ResponseField name="completedAt" type="string">
-      ISO 8601 timestamp when the transaction was completed (if successful)
+    <ResponseField name="paid_at" type="string">
+      ISO 8601 timestamp when payment was confirmed (null if not paid)
+    </ResponseField>
+    <ResponseField name="failed_at" type="string">
+      ISO 8601 timestamp when transaction failed (null if not failed)
+    </ResponseField>
+    <ResponseField name="failure_reason" type="string">
+      Reason for failure (null if not failed)
     </ResponseField>
   </Expandable>
 </ResponseField>
@@ -103,7 +189,18 @@ const response = await fetch(`https://api.rolla.io/api/v1/transaction/verify/${r
   },
 });
 
-const data = await response.json();
+const result = await response.json();
+
+if (result.success && result.data.status === 'successful') {
+  // Payment was successful
+  // Deliver value to customer
+  console.log('Payment successful!');
+  console.log('Amount paid:', result.data.amount);
+  console.log('Paid with:', result.data.payment_source?.brand);
+} else {
+  // Payment failed or is pending
+  console.log('Payment not successful:', result.data.status);
+}
 ```
 
 ```python Python
@@ -118,7 +215,17 @@ response = requests.get(
     }
 )
 
-data = response.json()
+result = response.json()
+
+if result['success'] and result['data']['status'] == 'successful':
+    # Payment was successful
+    print('Payment successful!')
+    print(f"Amount paid: {result['data']['amount']}")
+    if result['data']['payment_source']:
+        print(f"Paid with: {result['data']['payment_source']['brand']}")
+else:
+    # Payment failed or is pending
+    print(f"Payment not successful: {result['data']['status']}")
 ```
 
 ```php PHP
@@ -135,13 +242,25 @@ curl_setopt($ch, CURLOPT_HTTPHEADER, [
 $response = curl_exec($ch);
 curl_close($ch);
 
-$data = json_decode($response, true);
+$result = json_decode($response, true);
+
+if ($result['success'] && $result['data']['status'] === 'successful') {
+    // Payment was successful
+    echo 'Payment successful!';
+    echo 'Amount paid: ' . $result['data']['amount'];
+    if ($result['data']['payment_source']) {
+        echo 'Paid with: ' . $result['data']['payment_source']['brand'];
+    }
+} else {
+    // Payment failed or is pending
+    echo 'Payment not successful: ' . $result['data']['status'];
+}
 ?>
 ```
 </RequestExample>
 
 <ResponseExample>
-```json 200 Successful Transaction
+```json 200 Successful Card Transaction
 {
   "success": true,
   "status": 200,
@@ -149,22 +268,36 @@ $data = json_decode($response, true);
   "data": {
     "id": "550e8400-e29b-41d4-a716-446655440000",
     "reference": "TXN_gGbEEvK25eVgmgrf",
-    "amount": 1000,
-    "currency": "USD",
     "status": "successful",
+    "amount": 100000,
+    "currency": "NGN",
     "channel": "card",
-    "fee": 35.00,
-    "netAmount": 965.00,
+    "fees": 1500,
+    "net_amount": 98500,
     "customer": {
       "email": "customer@example.com",
-      "name": "John Doe"
+      "name": "John Doe",
+      "phone": "+2348012345678"
     },
+    "payment_source": {
+      "type": "card",
+      "bin": "408408",
+      "last4": "4081",
+      "brand": "visa",
+      "card_type": "debit",
+      "country_code": "NG",
+      "bank": "Test Bank"
+    },
+    "description": "Payment for Premium Plan",
     "metadata": {
-      "orderId": "ORD-123"
+      "order_id": "ORD-123",
+      "product_name": "Premium Plan"
     },
-    "description": "Order #12345",
-    "createdAt": "2026-02-28T14:34:47.422Z",
-    "completedAt": "2026-02-28T14:35:12.156Z"
+    "gateway_response": "Approved",
+    "created_at": "2026-02-28T14:34:47.422Z",
+    "paid_at": "2026-02-28T14:35:12.156Z",
+    "failed_at": null,
+    "failure_reason": null
   }
 }
 ```
@@ -177,22 +310,111 @@ $data = json_decode($response, true);
   "data": {
     "id": "550e8400-e29b-41d4-a716-446655440000",
     "reference": "TXN_gGbEEvK25eVgmgrf",
-    "amount": 1000,
-    "currency": "USD",
     "status": "requires_action",
+    "amount": 100000,
+    "currency": "NGN",
     "channel": "card",
-    "fee": 35.00,
-    "netAmount": 965.00,
+    "fees": 1500,
+    "net_amount": 98500,
     "customer": {
       "email": "customer@example.com",
-      "name": "John Doe"
+      "name": "John Doe",
+      "phone": null
     },
+    "payment_source": {
+      "type": "card",
+      "bin": "408408",
+      "last4": "4081",
+      "brand": "visa",
+      "card_type": "debit",
+      "country_code": "NG",
+      "bank": null
+    },
+    "description": "Payment for Premium Plan",
     "metadata": {
-      "orderId": "ORD-123"
+      "order_id": "ORD-123"
     },
-    "description": "Order #12345",
-    "createdAt": "2026-02-28T14:34:47.422Z",
-    "completedAt": null
+    "gateway_response": null,
+    "created_at": "2026-02-28T14:34:47.422Z",
+    "paid_at": null,
+    "failed_at": null,
+    "failure_reason": null
+  }
+}
+```
+
+```json 200 Bank Transfer (Successful)
+{
+  "success": true,
+  "status": 200,
+  "message": "Transaction retrieved",
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440001",
+    "reference": "TXN_hHcFFwL36fWhnhsg",
+    "status": "successful",
+    "amount": 500000,
+    "currency": "NGN",
+    "channel": "bank_transfer",
+    "fees": 5000,
+    "net_amount": 495000,
+    "customer": {
+      "email": "customer@example.com",
+      "name": "John Doe",
+      "phone": null
+    },
+    "payment_source": {
+      "type": "bank_transfer",
+      "bank_code": "058",
+      "bank_name": "GTBank"
+    },
+    "description": "Invoice #456",
+    "metadata": {
+      "order_id": "ORD-456"
+    },
+    "gateway_response": "Approved",
+    "created_at": "2026-02-28T15:15:00.000Z",
+    "paid_at": "2026-02-28T15:20:33.891Z",
+    "failed_at": null,
+    "failure_reason": null
+  }
+}
+```
+
+```json 200 Failed Transaction
+{
+  "success": true,
+  "status": 200,
+  "message": "Transaction retrieved",
+  "data": {
+    "id": "550e8400-e29b-41d4-a716-446655440002",
+    "reference": "TXN_iIdGGxM47gXioith",
+    "status": "failed",
+    "amount": 100000,
+    "currency": "NGN",
+    "channel": "card",
+    "fees": 1500,
+    "net_amount": 98500,
+    "customer": {
+      "email": "customer@example.com",
+      "name": "John Doe",
+      "phone": null
+    },
+    "payment_source": {
+      "type": "card",
+      "bin": "408408",
+      "last4": "4081",
+      "brand": "visa",
+      "card_type": "debit",
+      "country_code": "NG",
+      "bank": null
+    },
+    "description": "Payment for Premium Plan",
+    "metadata": {},
+    "gateway_response": "Insufficient funds",
+    "created_at": "2026-02-28T16:00:00.000Z",
+    "paid_at": null,
+    "failed_at": "2026-02-28T16:00:15.000Z",
+    "failure_reason": "Insufficient funds"
   }
 }
 ```
@@ -216,27 +438,92 @@ $data = json_decode($response, true);
 
 ## Transaction Statuses
 
-| Status | Description |
-|--------|-------------|
-| `pending` | Transaction has been created but not yet processed |
-| `requires_action` | Additional action required (3DS, PIN, OTP) - customer has not completed authentication |
-| `processing` | Transaction is being processed by the payment provider |
-| `successful` | Transaction completed successfully - you can fulfill the order |
-| `failed` | Transaction failed - do not fulfill the order |
+| Status | Description | Action |
+|--------|-------------|--------|
+| `pending` | Transaction created but not yet processed | Wait for customer to complete payment |
+| `requires_action` | Additional action required (3DS, PIN, OTP) | Customer has not completed authentication |
+| `processing` | Transaction is being processed | Wait and poll again |
+| `successful` | Payment completed successfully | **Deliver value to customer** |
+| `failed` | Transaction failed | Do not deliver value |
+
+## Step-by-Step Verification
+
+Here's how to properly verify a transaction:
+
+<Steps>
+  <Step title="Receive the callback">
+    When the customer is redirected to your `callbackUrl`, extract the reference from the query parameters:
+    ```javascript
+    const urlParams = new URLSearchParams(window.location.search);
+    const reference = urlParams.get('reference');
+    ```
+  </Step>
+  <Step title="Send reference to your server">
+    Send the reference to your backend. Never verify from the client side.
+    ```javascript
+    const response = await fetch('/api/verify-payment', {
+      method: 'POST',
+      body: JSON.stringify({ reference }),
+    });
+    ```
+  </Step>
+  <Step title="Verify on your server">
+    Call the Rolla verify endpoint with your secret key:
+    ```javascript
+    const result = await fetch(`https://api.rolla.io/api/v1/transaction/verify/${reference}`, {
+      headers: { 'Authorization': `Bearer ${process.env.ROLLA_SECRET_KEY}` },
+    }).then(res => res.json());
+    ```
+  </Step>
+  <Step title="Check the transaction status">
+    Confirm the transaction was successful **and** the amount matches:
+    ```javascript
+    if (result.data.status === 'successful') {
+      // Verify the amount matches what you expected
+      if (result.data.amount === expectedAmount) {
+        // Deliver value to customer
+      }
+    }
+    ```
+  </Step>
+</Steps>
 
 ## Best Practices
 
-<Warning>
-  Always verify the transaction status on your server before fulfilling orders. Never rely solely on client-side callbacks.
-</Warning>
+<CardGroup cols={2}>
+  <Card title="Always Verify Server-Side" icon="server">
+    Never trust client-side data. Always verify the transaction on your server using your secret key.
+  </Card>
+  <Card title="Check the Amount" icon="calculator">
+    Confirm the amount paid matches what you expected. A malicious user could pay less than required.
+  </Card>
+  <Card title="Use Webhooks Too" icon="bell">
+    Set up [webhooks](/api-reference/webhooks) for real-time notifications. Verify is for when the customer returns.
+  </Card>
+  <Card title="Handle All Statuses" icon="list-check">
+    Don't just check for success. Handle pending, failed, and other states appropriately.
+  </Card>
+</CardGroup>
 
-1. **Verify after callback**: When your customer is redirected back to your `callbackUrl`, always call this endpoint to verify the transaction status.
+## Understanding payment_source
 
-2. **Verify before fulfillment**: Before delivering goods or services, confirm the transaction status is `successful`.
+The `payment_source` object contains details about how the customer paid. This is useful for:
 
-3. **Handle pending states**: If status is `requires_action` or `processing`, wait and poll again after a few seconds.
+1. **Displaying payment info**: Show the customer which card/account they used
+2. **Analytics**: Track which payment methods are most popular
+3. **Fraud detection**: Check the card's country matches the customer's location
 
-4. **Use webhooks**: For real-time updates, configure [webhooks](/api-reference/webhooks) to receive transaction status notifications.
+```javascript
+const { payment_source } = result.data;
+
+if (payment_source) {
+  if (payment_source.type === 'card') {
+    console.log(`Paid with ${payment_source.brand} ending in ${payment_source.last4}`);
+  } else if (payment_source.type === 'bank_transfer') {
+    console.log(`Paid via bank transfer from ${payment_source.bank_name}`);
+  }
+}
+```
 
 ## Alternative: POST Method
 
