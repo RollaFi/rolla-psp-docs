@@ -70,15 +70,6 @@ Authorization: Bearer sk_live_your_secret_key
   </Expandable>
 </ParamField>
 
-<ParamField body="bankTransfer" type="object">
-  Bank transfer details (required when channel is `bank_transfer`)
-  <Expandable title="properties">
-    <ParamField body="bankCode" type="string" required>
-      Bank code for the transfer
-    </ParamField>
-  </Expandable>
-</ParamField>
-
 <ParamField body="billing" type="object">
   Billing address (recommended for international cards to reduce declines)
   <Expandable title="properties">
@@ -118,10 +109,6 @@ Authorization: Bearer sk_live_your_secret_key
   Indicates if the request was successful
 </ResponseField>
 
-<ResponseField name="status" type="number">
-  HTTP status code (201 for success)
-</ResponseField>
-
 <ResponseField name="message" type="string">
   Response message
 </ResponseField>
@@ -129,42 +116,13 @@ Authorization: Bearer sk_live_your_secret_key
 <ResponseField name="data" type="object">
   <Expandable title="properties">
     <ResponseField name="reference" type="string">
-      Unique transaction reference (e.g., `TXN_gGbEEvK25eVgmgrf`)
+      Unique transaction reference (e.g., `TXN_gGbEEvK25eVgmgrf`) or your custom reference if provided
     </ResponseField>
     <ResponseField name="status" type="string">
       Transaction status: `pending`, `requires_action`, `processing`, `successful`, `failed`
     </ResponseField>
-    <ResponseField name="amount" type="number">
-      Transaction amount
-    </ResponseField>
-    <ResponseField name="currency" type="string">
-      Currency code
-    </ResponseField>
-    <ResponseField name="fees" type="number">
-      Total fee charged for the transaction
-    </ResponseField>
-    <ResponseField name="net_amount" type="number">
-      Amount after fees (amount - fees)
-    </ResponseField>
-    <ResponseField name="next_action" type="object">
-      Next action required (if status is `requires_action`)
-      <Expandable title="properties">
-        <ResponseField name="type" type="string">
-          Action type: `redirect`, `pin_required`, `otp_required`
-        </ResponseField>
-        <ResponseField name="redirect_url" type="string">
-          URL to redirect the customer (for 3D Secure)
-        </ResponseField>
-        <ResponseField name="message" type="string">
-          Message to display to the user (for PIN/OTP)
-        </ResponseField>
-      </Expandable>
-    </ResponseField>
-    <ResponseField name="created_at" type="string">
-      ISO 8601 timestamp when the transaction was created
-    </ResponseField>
-    <ResponseField name="paid_at" type="string">
-      ISO 8601 timestamp when payment was confirmed (null if not yet paid)
+    <ResponseField name="payment_url" type="string">
+      URL to redirect the customer for payment authentication (3D Secure, etc.). `null` if no redirect is required.
     </ResponseField>
   </Expandable>
 </ResponseField>
@@ -291,46 +249,14 @@ data = response.json()
 </RequestExample>
 
 <ResponseExample>
-```json 201 Requires 3DS Authentication
+```json 201 Requires Authentication
 {
   "success": true,
-  "status": 201,
   "message": "Transaction initiated",
   "data": {
     "reference": "ORD-12345",
     "status": "requires_action",
-    "amount": 1000,
-    "currency": "USD",
-    "fees": 35,
-    "net_amount": 965,
-    "next_action": {
-      "type": "redirect",
-      "redirect_url": "https://checkout.rolla.io/3ds?ref=ROLLA-G-123456789-ABC123"
-    },
-    "created_at": "2026-02-28T14:34:47.422Z",
-    "paid_at": null
-  }
-}
-```
-
-```json 201 Requires PIN
-{
-  "success": true,
-  "status": 201,
-  "message": "Transaction initiated",
-  "data": {
-    "reference": "TXN_gGbEEvK25eVgmgrf",
-    "status": "requires_action",
-    "amount": 100000,
-    "currency": "NGN",
-    "fees": 1500,
-    "net_amount": 98500,
-    "next_action": {
-      "type": "pin_required",
-      "message": "Enter your card PIN to complete payment"
-    },
-    "created_at": "2026-02-28T14:34:47.422Z",
-    "paid_at": null
+    "payment_url": "https://checkout.rolla.io/pay?ref=ROLLA-G-123456789-ABC123"
   }
 }
 ```
@@ -338,18 +264,11 @@ data = response.json()
 ```json 201 Successful (No Auth Required)
 {
   "success": true,
-  "status": 201,
   "message": "Transaction initiated",
   "data": {
     "reference": "TXN_hHcFFwL36fWhnhsg",
     "status": "successful",
-    "amount": 50000,
-    "currency": "NGN",
-    "fees": 750,
-    "net_amount": 49250,
-    "next_action": null,
-    "created_at": "2026-02-28T14:34:47.422Z",
-    "paid_at": "2026-02-28T14:34:48.156Z"
+    "payment_url": null
   }
 }
 ```
@@ -357,7 +276,6 @@ data = response.json()
 ```json 400 Validation Error
 {
   "success": false,
-  "status": 400,
   "message": "card: Card details are required for card payments"
 }
 ```
@@ -365,7 +283,6 @@ data = response.json()
 ```json 401 Unauthorized
 {
   "success": false,
-  "status": 401,
   "message": "Invalid API key"
 }
 ```
@@ -373,7 +290,6 @@ data = response.json()
 ```json 409 Duplicate Reference
 {
   "success": false,
-  "status": 409,
   "message": "Transaction with reference 'ORD-12345' already exists"
 }
 ```
@@ -420,7 +336,7 @@ Use these test cards with your `sk_test_*` API key in sandbox mode:
 
 After initiating a payment:
 
-1. If `status` is `requires_action`, redirect the customer to `next_action.redirect_url`
-2. The customer completes authentication (3D Secure, PIN, etc.)
+1. If `status` is `requires_action`, redirect the customer to `payment_url`
+2. The customer completes authentication (3D Secure, etc.)
 3. Customer is redirected back to your `callbackUrl`
 4. Use the [Verify Transaction](/api-reference/verify-transaction) endpoint to confirm the final status
