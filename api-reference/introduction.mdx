@@ -1,16 +1,16 @@
 ---
 title: 'API Reference'
-description: 'Complete reference for the Rolla PSP API'
+description: 'Complete reference for the Rolla Pay API'
 ---
 
 ## Overview
 
-The Rolla PSP API is organized around REST. Our API has predictable resource-oriented URLs, accepts JSON-encoded request bodies, returns JSON-encoded responses, and uses standard HTTP response codes and authentication.
+The Rolla Pay API is organized around REST. Our API has predictable resource-oriented URLs, accepts JSON-encoded request bodies, returns JSON-encoded responses, and uses standard HTTP response codes and authentication.
 
 ## Base URL
 
 ```
-https://api.rollapay.com/v1
+https://api.rollapay.com
 ```
 
 ## Authentication
@@ -18,7 +18,7 @@ https://api.rollapay.com/v1
 All API endpoints require authentication via the `X-API-Key` header.
 
 ```bash
-curl -X GET "https://api.rollapay.com/v1/transactions" \
+curl -X GET "https://api.rollapay.com/transactions" \
   -H "X-API-Key: your_api_key_here" \
   -H "Content-Type: application/json"
 ```

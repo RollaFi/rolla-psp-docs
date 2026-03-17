@@ -1,6 +1,6 @@
-# Rolla PSP API Documentation
+# Rolla Pay API Documentation
 
-This repository contains the API documentation for [Rolla PSP](https://rolla.io), built with [Mintlify](https://mintlify.com).
+This repository contains the API documentation for [Rolla Pay](https://rolla.io), built with [Mintlify](https://mintlify.com).
 
 ## Documentation
 
