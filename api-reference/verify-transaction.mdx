@@ -1,6 +1,6 @@
 ---
 title: 'Verify Transaction'
-api: 'GET https://api.rolla.io/api/v1/transaction/verify/{reference}'
+api: 'GET https://api.rollapay.com/api/v1/transaction/verify/{reference}'
 description: 'Confirm the status of a transaction after a customer completes payment'
 ---
 
@@ -176,14 +176,14 @@ Authorization: Bearer sk_live_your_secret_key
 
 <RequestExample>
 ```bash cURL
-curl -X GET "https://api.rolla.io/api/v1/transaction/verify/TXN_gGbEEvK25eVgmgrf" \
+curl -X GET "https://api.rollapay.com/api/v1/transaction/verify/TXN_gGbEEvK25eVgmgrf" \
   -H "Authorization: Bearer sk_live_your_secret_key"
 ```
 
 ```javascript Node.js
 const reference = 'TXN_gGbEEvK25eVgmgrf';
 
-const response = await fetch(`https://api.rolla.io/api/v1/transaction/verify/${reference}`, {
+const response = await fetch(`https://api.rollapay.com/api/v1/transaction/verify/${reference}`, {
   headers: {
     'Authorization': 'Bearer sk_live_your_secret_key',
   },
@@ -209,7 +209,7 @@ import requests
 reference = 'TXN_gGbEEvK25eVgmgrf'
 
 response = requests.get(
-    f'https://api.rolla.io/api/v1/transaction/verify/{reference}',
+    f'https://api.rollapay.com/api/v1/transaction/verify/{reference}',
     headers={
         'Authorization': 'Bearer sk_live_your_secret_key',
     }
@@ -233,7 +233,7 @@ else:
 $reference = 'TXN_gGbEEvK25eVgmgrf';
 
 $ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, "https://api.rolla.io/api/v1/transaction/verify/{$reference}");
+curl_setopt($ch, CURLOPT_URL, "https://api.rollapay.com/api/v1/transaction/verify/{$reference}");
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, [
     'Authorization: Bearer sk_live_your_secret_key'
@@ -470,7 +470,7 @@ Here's how to properly verify a transaction:
   <Step title="Verify on your server">
     Call the Rolla verify endpoint with your secret key:
     ```javascript
-    const result = await fetch(`https://api.rolla.io/api/v1/transaction/verify/${reference}`, {
+    const result = await fetch(`https://api.rollapay.com/api/v1/transaction/verify/${reference}`, {
       headers: { 'Authorization': `Bearer ${process.env.ROLLA_SECRET_KEY}` },
     }).then(res => res.json());
     ```

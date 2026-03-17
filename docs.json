@@ -75,7 +75,7 @@
   },
   "api": {
     "mdx": {
-      "server": "https://api.rolla.io",
+      "server": "https://api.rollapay.com",
       "auth": {
         "method": "bearer"
       }
