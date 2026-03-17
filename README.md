@@ -81,7 +81,7 @@ mintlify deploy
 
 - [Rolla Dashboard](https://merchant.rollapay.com)
 - [Mintlify Documentation](https://mintlify.com/docs)
-- [Support](mailto:support@rolla.io)
+- [Support](mailto:support@rollapay.com)
 
 ## License
 
