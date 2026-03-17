@@ -19,10 +19,7 @@
             "groups": [
               {
                 "group": "Get Started",
-                "pages": [
-                  "introduction",
-                  "authentication"
-                ]
+                "pages": ["introduction", "authentication"]
               }
             ]
           }
@@ -37,9 +34,7 @@
             "groups": [
               {
                 "group": "API Reference",
-                "pages": [
-                  "api-reference/introduction"
-                ]
+                "pages": ["api-reference/introduction"]
               },
               {
                 "group": "Payments",
@@ -53,15 +48,11 @@
               },
               {
                 "group": "Webhooks",
-                "pages": [
-                  "api-reference/webhooks"
-                ]
+                "pages": ["api-reference/webhooks"]
               },
               {
                 "group": "API Keys",
-                "pages": [
-                  "api-reference/api-keys"
-                ]
+                "pages": ["api-reference/api-keys"]
               }
             ]
           }
@@ -91,7 +82,7 @@
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://dashboard.rolla.io"
+      "href": "https://merchant.rollapay.com"
     }
   },
   "footer": {

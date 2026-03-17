@@ -9,20 +9,20 @@ Webhooks allow you to receive real-time notifications when events occur in your 
 
 ## Setting Up Webhooks
 
-Configure your webhook URL in the [Rolla Dashboard](https://dashboard.rolla.io) under **Settings > API Keys & Webhooks**.
+Configure your webhook URL in the [Rolla Dashboard](https://merchant.rollapay.com) under **Settings > API Keys & Webhooks**.
 
 You can configure separate webhook URLs for test and live modes.
 
 ## Webhook Events
 
-| Event | Description |
-|-------|-------------|
-| `payment.pending` | Payment has been initiated and is pending |
-| `payment.processing` | Payment is being processed |
-| `payment.success` | Payment completed successfully |
-| `payment.failed` | Payment failed |
-| `refund.completed` | Refund was processed |
-| `dispute.created` | A dispute has been opened |
+| Event                | Description                               |
+| -------------------- | ----------------------------------------- |
+| `payment.pending`    | Payment has been initiated and is pending |
+| `payment.processing` | Payment is being processed                |
+| `payment.success`    | Payment completed successfully            |
+| `payment.failed`     | Payment failed                            |
+| `refund.completed`   | Refund was processed                      |
+| `dispute.created`    | A dispute has been opened                 |
 
 ## Webhook Payload
 
@@ -39,8 +39,8 @@ All webhooks are sent as `POST` requests with a JSON body:
     "status": "successful",
     "amount": 1000,
     "currency": "USD",
-    "feeAmount": 35.00,
-    "netAmount": 965.00,
+    "feeAmount": 35.0,
+    "netAmount": 965.0,
     "channel": "card",
     "cardBrand": "visa",
     "cardLast4": "6736",
@@ -139,13 +139,13 @@ All webhooks are sent as `POST` requests with a JSON body:
 
 Each webhook request includes the following headers:
 
-| Header | Description |
-|--------|-------------|
-| `Content-Type` | Always `application/json` |
-| `X-Rolla-Signature` | HMAC-SHA256 signature for verification |
-| `X-Rolla-Event` | The event type (e.g., `payment.success`) |
-| `X-Rolla-Timestamp` | ISO 8601 timestamp when the webhook was sent |
-| `X-Rolla-Webhook-Id` | Unique webhook delivery ID |
+| Header               | Description                                  |
+| -------------------- | -------------------------------------------- |
+| `Content-Type`       | Always `application/json`                    |
+| `X-Rolla-Signature`  | HMAC-SHA256 signature for verification       |
+| `X-Rolla-Event`      | The event type (e.g., `payment.success`)     |
+| `X-Rolla-Timestamp`  | ISO 8601 timestamp when the webhook was sent |
+| `X-Rolla-Webhook-Id` | Unique webhook delivery ID                   |
 
 ## Verifying Webhooks
 
@@ -236,13 +236,13 @@ def webhook():
 
 Your endpoint should return a `2xx` status code within 30 seconds. If we don't receive a successful response, we'll retry the webhook:
 
-| Attempt | Delay |
-|---------|-------|
-| 1st retry | 1 minute |
-| 2nd retry | 5 minutes |
+| Attempt   | Delay      |
+| --------- | ---------- |
+| 1st retry | 1 minute   |
+| 2nd retry | 5 minutes  |
 | 3rd retry | 15 minutes |
-| 4th retry | 1 hour |
-| 5th retry | 2 hours |
+| 4th retry | 1 hour     |
+| 5th retry | 2 hours    |
 
 After 5 failed attempts, the webhook will be marked as failed.
 
@@ -250,15 +250,18 @@ After 5 failed attempts, the webhook will be marked as failed.
 
 <AccordionGroup>
   <Accordion title="Return 200 quickly">
-    Process webhooks asynchronously and return a 200 status immediately. Handle business logic in a background job.
+    Process webhooks asynchronously and return a 200 status immediately. Handle
+    business logic in a background job.
   </Accordion>
   <Accordion title="Handle duplicates">
-    Webhooks may be delivered more than once. Use the `webhookId` field to deduplicate events.
+    Webhooks may be delivered more than once. Use the `webhookId` field to
+    deduplicate events.
   </Accordion>
   <Accordion title="Verify signatures">
     Always verify the `X-Rolla-Signature` header before processing the event.
   </Accordion>
   <Accordion title="Use HTTPS">
-    Always use HTTPS for your webhook endpoint to ensure data is encrypted in transit.
+    Always use HTTPS for your webhook endpoint to ensure data is encrypted in
+    transit.
   </Accordion>
 </AccordionGroup>

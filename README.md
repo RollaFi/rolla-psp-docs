@@ -79,7 +79,7 @@ mintlify deploy
 
 ## Resources
 
-- [Rolla Dashboard](https://dashboard.rolla.io)
+- [Rolla Dashboard](https://merchant.rollapay.com)
 - [Mintlify Documentation](https://mintlify.com/docs)
 - [Support](mailto:support@rolla.io)
 
