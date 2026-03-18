@@ -12,7 +12,7 @@ All API requests require authentication using your secret API key. You can obtai
 Include your secret key in the `Authorization` header with every request using the Bearer scheme:
 
 ```bash
-curl -X POST "https://api.rollapay.com/api/v1/transaction/initiate" \
+curl -X POST "https://api.rollapay.com/transaction/initiate" \
   -H "Authorization: Bearer sk_live_your_secret_key" \
   -H "Content-Type: application/json" \
   -d '{ ... }'
@@ -45,7 +45,7 @@ Secret keys provide full access to your account and should only be used in secur
 
 ```javascript Node.js
 const response = await fetch(
-  'https://api.rollapay.com/api/v1/transaction/initiate',
+  'https://api.rollapay.com/transaction/initiate',
   {
     method: 'POST',
     headers: {
@@ -71,7 +71,7 @@ const data = await response.json();
 import requests
 
 response = requests.post(
-    'https://api.rollapay.com/api/v1/transaction/initiate',
+    'https://api.rollapay.com/transaction/initiate',
     headers={
         'Authorization': 'Bearer sk_live_your_secret_key',
         'Content-Type': 'application/json',

@@ -29,7 +29,7 @@ Use this card for testing your integration:
 ## Example Test Request
 
 ```bash cURL
-curl -X POST "https://api.rollapay.com/api/v1/transaction/initiate" \
+curl -X POST "https://api.rollapay.com/transaction/initiate" \
   -H "Authorization: Bearer sk_test_your_test_key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -51,7 +51,7 @@ curl -X POST "https://api.rollapay.com/api/v1/transaction/initiate" \
 ```
 
 ```javascript Node.js
-const response = await fetch('https://api.rollapay.com/api/v1/transaction/initiate', {
+const response = await fetch('https://api.rollapay.com/transaction/initiate', {
   method: 'POST',
   headers: {
     'Authorization': 'Bearer sk_test_your_test_key',
