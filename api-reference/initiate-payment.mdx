@@ -146,7 +146,7 @@ curl -X POST "https://api.rollapay.com/transaction/initiate" \
       "number": "4187452461676736",
       "expiryMonth": "11",
       "expiryYear": "2027",
-      "cvv": "104",
+      "cvv": "100",
       "holderName": "John Doe"
     },
     "callbackUrl": "https://yoursite.com/callback",
@@ -184,7 +184,7 @@ const response = await fetch('https://api.rollapay.com/transaction/initiate', {
       number: '4187452461676736',
       expiryMonth: '11',
       expiryYear: '2027',
-      cvv: '104',
+      cvv: '100',
       holderName: 'John Doe'
     },
     callbackUrl: 'https://yoursite.com/callback',
@@ -227,7 +227,7 @@ response = requests.post(
             'number': '4187452461676736',
             'expiryMonth': '11',
             'expiryYear': '2027',
-            'cvv': '104',
+            'cvv': '100',
             'holderName': 'John Doe'
         },
         'callbackUrl': 'https://yoursite.com/callback',
@@ -310,14 +310,6 @@ data = response.json()
 Use these test cards with your `sk_test_*` API key in sandbox mode:
 
 <Tabs>
-  <Tab title="Visa">
-    | Field | Value |
-    |-------|-------|
-    | Card Number | `4187452461676736` |
-    | Expiry Month | `11` |
-    | Expiry Year | `2027` |
-    | CVV | `104` |
-  </Tab>
   <Tab title="Mastercard">
     | Field | Value |
     |-------|-------|
