@@ -19,7 +19,7 @@ Authorization: Bearer sk_live_your_secret_key
 ## Request Body
 
 <ParamField body="reference" type="string">
-  Optional custom transaction reference. If not provided, a unique reference will be auto-generated (e.g., `TXN_gGbEEvK25eVgmgrf`). Must be unique per organization.
+  Optional custom transaction reference. If not provided, a unique reference will be auto-generated (e.g., `TXN_gGbEEvK25eVgmgrf`). Must be globally unique across all transactions.
 </ParamField>
 
 <ParamField body="amount" type="number" required>
