@@ -305,7 +305,7 @@ $result = json_decode($response, true);
 </RequestExample>
 
 <ResponseExample>
-```json 201 Requires Authentication
+```json 200 Requires Authentication
 {
   "success": true,
   "message": "Transaction initiated",
@@ -317,7 +317,7 @@ $result = json_decode($response, true);
 }
 ```
 
-```json 201 Requires OTP
+```json 200 Requires OTP
 {
   "success": true,
   "message": "Please enter the OTP sent to your phone",
@@ -330,7 +330,7 @@ $result = json_decode($response, true);
 }
 ```
 
-```json 201 Requires PIN
+```json 200 Requires PIN
 {
   "success": true,
   "message": "Please enter your card PIN",
@@ -343,7 +343,7 @@ $result = json_decode($response, true);
 }
 ```
 
-```json 201 Successful (No Auth Required)
+```json 200 Successful (No Auth Required)
 {
   "success": true,
   "message": "Transaction initiated",
