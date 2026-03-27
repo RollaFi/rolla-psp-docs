@@ -124,6 +124,12 @@ Authorization: Bearer sk_live_your_secret_key
     <ResponseField name="payment_url" type="string">
       URL to redirect the customer for payment authentication (3D Secure, etc.). `null` if no redirect is required.
     </ResponseField>
+    <ResponseField name="next_action" type="string">
+      Indicates the next action required when `status` is `requires_action`. Possible values: `redirect` (redirect to payment_url), `otp` (submit OTP), `pin` (submit PIN)
+    </ResponseField>
+    <ResponseField name="message" type="string">
+      Additional message providing context (e.g., "Please enter the OTP sent to your phone")
+    </ResponseField>
   </Expandable>
 </ResponseField>
 
@@ -246,6 +252,56 @@ response = requests.post(
 
 data = response.json()
 ```
+
+```php PHP
+<?php
+
+$url = 'https://api.rollapay.com/transaction/initiate';
+
+$data = [
+    'reference' => 'ORD-12345',
+    'amount' => 1000,
+    'currency' => 'USD',
+    'channel' => 'card',
+    'customer' => [
+        'email' => 'customer@example.com',
+        'name' => 'John Doe',
+        'phone' => '08012345678'
+    ],
+    'card' => [
+        'number' => '4187452461676736',
+        'expiryMonth' => '11',
+        'expiryYear' => '2027',
+        'cvv' => '100',
+        'holderName' => 'John Doe'
+    ],
+    'callbackUrl' => 'https://yoursite.com/callback',
+    'description' => 'Order #12345',
+    'metadata' => [
+        'orderId' => 'ORD-123'
+    ],
+    'billing' => [
+        'address' => '123 Main Street',
+        'city' => 'Lagos',
+        'country' => 'NG',
+        'postalCode' => '100001'
+    ]
+];
+
+$ch = curl_init($url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Authorization: Bearer sk_live_your_secret_key',
+    'Content-Type: application/json'
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+$result = json_decode($response, true);
+```
 </RequestExample>
 
 <ResponseExample>
@@ -257,6 +313,32 @@ data = response.json()
     "reference": "ORD-12345",
     "status": "requires_action",
     "payment_url": "https://checkout.rolla.io/pay?ref=ROLLA-G-123456789-ABC123"
+  }
+}
+```
+
+```json 201 Requires OTP
+{
+  "success": true,
+  "message": "Please enter the OTP sent to your phone",
+  "data": {
+    "reference": "ORD-12345",
+    "status": "requires_action",
+    "next_action": "otp",
+    "payment_url": null
+  }
+}
+```
+
+```json 201 Requires PIN
+{
+  "success": true,
+  "message": "Please enter your card PIN",
+  "data": {
+    "reference": "ORD-12345",
+    "status": "requires_action",
+    "next_action": "pin",
+    "payment_url": null
   }
 }
 ```
@@ -326,9 +408,21 @@ Use these test cards with your `sk_test_*` API key in sandbox mode:
 
 ## Next Steps
 
-After initiating a payment:
+After initiating a payment, check the `status` and `next_action` fields:
 
-1. If `status` is `requires_action`, redirect the customer to `payment_url`
+### If `next_action` is `redirect`
+1. Redirect the customer to `payment_url`
 2. The customer completes authentication (3D Secure, etc.)
 3. Customer is redirected back to your `callbackUrl`
+4. Use the [Verify Transaction](/api-reference/verify-transaction) endpoint to confirm the final status
+
+### If `next_action` is `otp`
+1. Display an OTP input form to the customer
+2. Submit the OTP using the Submit OTP endpoint *(coming soon)*
+3. Use the [Verify Transaction](/api-reference/verify-transaction) endpoint to confirm the final status
+
+### If `next_action` is `pin`
+1. Display a PIN input form to the customer
+2. Submit the PIN using the Submit PIN endpoint *(coming soon)*
+3. The response may return another `next_action` (e.g., `otp`) - handle accordingly
 4. Use the [Verify Transaction](/api-reference/verify-transaction) endpoint to confirm the final status
