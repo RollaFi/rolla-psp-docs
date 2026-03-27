@@ -3,9 +3,19 @@
   "theme": "mint",
   "name": "Rolla Pay API",
   "colors": {
-    "primary": "#0D9373",
-    "light": "#07C983",
-    "dark": "#0D9373"
+    "primary": "#274601",
+    "light": "#548704",
+    "dark": "#274601"
+  },
+  "fonts": {
+    "heading": {
+      "family": "Space Grotesk",
+      "weight": 700
+    },
+    "body": {
+      "family": "Space Grotesk",
+      "weight": 400
+    }
   },
   "favicon": "/images/favicon.svg",
   "navigation": {
